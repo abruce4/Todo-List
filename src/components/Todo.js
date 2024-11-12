@@ -3,40 +3,44 @@ import React from "react";
 import { useEffect, useState } from "react";
 
 function Todo() {
-    const [todoList, setTodoList] = useState([]);
-    const [editableId, setEditableId] = useState(null);
-    const [editedTask, setEditedTask] = useState("");
-    const [editedStatus, setEditedStatus] = useState("");
-    const [newTask, setNewTask] = useState("");
-    const [newStatus, setNewStatus] = useState("");
-    const [newDeadline, setNewDeadline] = useState("");
-    const [editedDeadline, setEditedDeadline] = useState("");
+    
+    const [todoList, setTodoList] = useState([]); // These are like boxes where we store different pieces of information
+    const [editableId, setEditableId] = useState(null);  // Remembers which task we're editing
+    const [editedTask, setEditedTask] = useState("");    // Stores the task we're changing
+    const [editedStatus, setEditedStatus] = useState(""); // Stores the status we're changing
+    const [newTask, setNewTask] = useState("");          // Stores a brand new task
+    const [newStatus, setNewStatus] = useState("");      // Stores a brand new status
+    const [newDeadline, setNewDeadline] = useState("");  // Stores when the task needs to be done
+    const [editedDeadline, setEditedDeadline] = useState(""); // Stores the deadline we're changing
 
-    // Add this new constant for status options
+    // This is like a list of colored stickers we can put on our tasks
     const statusOptions = [
-        { value: "Not Started", color: "secondary" },
-        { value: "In Progress", color: "warning" },
-        { value: "Completed", color: "success" },
+        { value: "Not Started", color: "secondary" },  // Gray for tasks we haven't started
+        { value: "In Progress", color: "warning" },    // Yellow for tasks we're working on
+        { value: "Completed", color: "success" },      // Green for finished tasks
     ];
 
-    // Fetch tasks from database
+    // When our page first opens, this part gets all our tasks from our storage box (database)
     useEffect(() => {
-        axios.get('http://127.0.0.1:3001/getTodoList')
+        axios.get('http://127.0.0.1:3001/getTodoList')  // Ask for our list of tasks
             .then(result => {
-                setTodoList(result.data)
+                setTodoList(result.data)  // Put the tasks in our todoList box
             })
-            .catch(err => console.log(err))
+            .catch(err => console.log(err))  // If something goes wrong, tell us about it
     }, [])
 
-    // Function to toggle the editable state for a specific row
+    // This is like clicking an "Edit" button on a task
     const toggleEditable = (id) => {
+        // Find the task we want to edit
         const rowData = todoList.find((data) => data._id === id);
         if (rowData) {
-            setEditableId(id);
-            setEditedTask(rowData.task);
-            setEditedStatus(rowData.status);
-            setEditedDeadline(rowData.deadline || "");
+            // If we found the task, get ready to edit it
+            setEditableId(id);  // Remember which task we're editing
+            setEditedTask(rowData.task);  // Put the task text in our editing box
+            setEditedStatus(rowData.status);  // Remember its current status
+            setEditedDeadline(rowData.deadline || "");  // Remember when it needs to be done
         } else {
+            // If we can't find the task, clear all our editing boxes
             setEditableId(null);
             setEditedTask("");
             setEditedStatus("");
@@ -44,61 +48,62 @@ function Todo() {
         }
     };
 
-
-    // Function to add task to the database
+    // This is like adding a new task to our list
     const addTask = (e) => {
-        e.preventDefault();
+        e.preventDefault();  // Stop the page from refreshing
+        // Make sure we filled out all the information
         if (!newTask || !newStatus || !newDeadline) {
-            alert("All fields must be filled out.");
+            alert("All fields must be filled out.");  // Show a reminder if we forgot something
             return;
         }
 
+        // Send the new task to our storage box (database)
         axios.post('http://127.0.0.1:3001/addTodoList', { task: newTask, status: newStatus, deadline: newDeadline })
             .then(res => {
                 console.log(res);
-                window.location.reload();
+                window.location.reload();  // Refresh the page to see our new task
             })
-            .catch(err => console.log(err));
+            .catch(err => console.log(err));  // If something goes wrong, tell us about it
     }
 
-    // Function to save edited data to the database
+    // This saves any changes we made to a task
     const saveEditedTask = (id) => {
+        // Put all our changes in one box
         const editedData = {
             task: editedTask,
             status: editedStatus,
             deadline: editedDeadline,
         };
 
-        // If the fields are empty
+        // Make sure we didn't leave anything blank
         if (!editedTask || !editedStatus || !editedDeadline) {
-            alert("All fields must be filled out.");
+            alert("All fields must be filled out.");  // Show a reminder if we forgot something
             return;
         }
 
-        // Updating edited data to the database through updateById API
+        // Save our changes to the storage box (database)
         axios.post('http://127.0.0.1:3001/updateTodoList/' + id, editedData)
             .then(result => {
                 console.log(result);
+                // Clear all our editing boxes
                 setEditableId(null);
                 setEditedTask("");
                 setEditedStatus("");
-                setEditedDeadline(""); // Clear the edited deadline
-                window.location.reload();
+                setEditedDeadline("");
+                window.location.reload();  // Refresh the page to see our changes
             })
-            .catch(err => console.log(err));
+            .catch(err => console.log(err));  // If something goes wrong, tell us about it
     }
 
-
-    // Delete task from database
+    // This is like erasing a task from our list
     const deleteTask = (id) => {
+        // Tell our storage box (database) to remove the task
         axios.delete('http://127.0.0.1:3001/deleteTodoList/' + id)
             .then(result => {
                 console.log(result);
-                window.location.reload();
+                window.location.reload();  // Refresh the page to see the task is gone
             })
-            .catch(err =>
-                console.log(err)
-            )
+            .catch(err => console.log(err))  // If something goes wrong, tell us about it
     }
 
     return (
