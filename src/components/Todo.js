@@ -12,6 +12,13 @@ function Todo() {
     const [newDeadline, setNewDeadline] = useState("");
     const [editedDeadline, setEditedDeadline] = useState("");
 
+    // Add this new constant for status options
+    const statusOptions = [
+        { value: "Not Started", color: "secondary" },
+        { value: "In Progress", color: "warning" },
+        { value: "Completed", color: "success" },
+    ];
+
     // Fetch tasks from database
     useEffect(() => {
         axios.get('http://127.0.0.1:3001/getTodoList')
@@ -95,125 +102,153 @@ function Todo() {
     }
 
     return (
-        <div className="container mt-5">
-            <div className="row">
-                <div className="col-md-7">
-                    <h2 className="text-center">Todo List</h2>
-                    <div className="table-responsive">
-                        <table className="table table-bordered">
-                            <thead className="table-primary">
-                                <tr>
-                                    <th>Task</th>
-                                    <th>Status</th>
-                                    <th>Deadline</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            {Array.isArray(todoList) ? (
-                                <tbody>
-                                    {todoList.map((data) => (
-                                        <tr key={data._id}>
-                                            <td>
-                                                {editableId === data._id ? (
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        value={editedTask}
-                                                        onChange={(e) => setEditedTask(e.target.value)}
-                                                    />
-                                                ) : (
-                                                    data.task
-                                                )}
-                                            </td>
-                                            <td>
-                                                {editableId === data._id ? (
-                                                    <input
-                                                        type="text"
-                                                        className="form-control"
-                                                        value={editedStatus}
-                                                        onChange={(e) => setEditedStatus(e.target.value)}
-                                                    />
-                                                ) : (
-                                                    data.status
-                                                )}
-                                            </td>
-                                            <td>
-                                                {editableId === data._id ? (
-                                                    <input
-                                                        type="datetime-local"
-                                                        className="form-control"
-                                                        value={editedDeadline}
-                                                        onChange={(e) => setEditedDeadline(e.target.value)}
-                                                    />
-                                                ) : (
-                                                    data.deadline ? new Date(data.deadline).toLocaleString() : ''
-                                                )}
-                                            </td>
-
-                                            <td>
-                                                {editableId === data._id ? (
-                                                    <button className="btn btn-success btn-sm" onClick={() => saveEditedTask(data._id)}>
-                                                        Save
-                                                    </button>
-                                                ) : (
-                                                    <button className="btn btn-primary btn-sm" onClick={() => toggleEditable(data._id)}>
-                                                        Edit
-                                                    </button>
-                                                )}
-                                                <button className="btn btn-danger btn-sm ml-1" onClick={() => deleteTask(data._id)}>
-                                                    Delete
-                                                </button>
-                                            </td>
+        <div className="container-fluid px-4 py-5">
+            <div className="row gy-4">
+                <div className="col-lg-8">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-primary text-white">
+                            <h3 className="mb-0"><i className="fas fa-tasks me-2"></i>Todo List</h3>
+                        </div>
+                        <div className="card-body">
+                            <div className="table-responsive">
+                                <table className="table table-hover">
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th>Task</th>
+                                            <th>Status</th>
+                                            <th>Deadline</th>
+                                            <th>Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            ) : (
-                                <tbody>
-                                    <tr>
-                                        <td colSpan="4">Loading products...</td>
-                                    </tr>
-                                </tbody>
-                            )}
-
-
-                        </table>
+                                    </thead>
+                                    {Array.isArray(todoList) ? (
+                                        <tbody>
+                                            {todoList.map((data) => (
+                                                <tr key={data._id}>
+                                                    <td>
+                                                        {editableId === data._id ? (
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                value={editedTask}
+                                                                onChange={(e) => setEditedTask(e.target.value)}
+                                                            />
+                                                        ) : (
+                                                            data.task
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {editableId === data._id ? (
+                                                            <select
+                                                                className="form-select"
+                                                                value={editedStatus}
+                                                                onChange={(e) => setEditedStatus(e.target.value)}
+                                                            >
+                                                                {statusOptions.map(option => (
+                                                                    <option key={option.value} value={option.value}>
+                                                                        {option.value}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            <span className={`badge bg-${statusOptions.find(opt => opt.value === data.status)?.color || 'secondary'}`}>
+                                                                {data.status}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {editableId === data._id ? (
+                                                            <input
+                                                                type="datetime-local"
+                                                                className="form-control"
+                                                                value={editedDeadline}
+                                                                onChange={(e) => setEditedDeadline(e.target.value)}
+                                                            />
+                                                        ) : (
+                                                            <span className="text-muted">
+                                                                <i className="far fa-clock me-1"></i>
+                                                                {data.deadline ? new Date(data.deadline).toLocaleString() : ''}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        {editableId === data._id ? (
+                                                            <button className="btn btn-success btn-sm me-2" onClick={() => saveEditedTask(data._id)}>
+                                                                <i className="fas fa-save me-1"></i> Save
+                                                            </button>
+                                                        ) : (
+                                                            <button className="btn btn-outline-primary btn-sm me-2" onClick={() => toggleEditable(data._id)}>
+                                                                <i className="fas fa-edit me-1"></i> Edit
+                                                            </button>
+                                                        )}
+                                                        <button className="btn btn-outline-danger btn-sm" onClick={() => deleteTask(data._id)}>
+                                                            <i className="fas fa-trash me-1"></i> Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    ) : (
+                                        <tbody>
+                                            <tr>
+                                                <td colSpan="4" className="text-center py-4">
+                                                    <div className="spinner-border text-primary" role="status">
+                                                        <span className="visually-hidden">Loading...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    )}
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="col-md-5">
-                    <h2 className="text-center">Add Task</h2>
-                    <form className="bg-light p-4">
-                        <div className="mb-3">
-                            <label>Task</label>
-                            <input
-                                className="form-control"
-                                type="text"
-                                placeholder="Enter Task"
-                                onChange={(e) => setNewTask(e.target.value)}
-                            />
+                <div className="col-lg-4">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-success text-white">
+                            <h3 className="mb-0"><i className="fas fa-plus me-2"></i>Add Task</h3>
                         </div>
-                        <div className="mb-3">
-                            <label>Status</label>
-                            <input
-                                className="form-control"
-                                type="text"
-                                placeholder="Enter Status"
-                                onChange={(e) => setNewStatus(e.target.value)}
-                            />
+                        <div className="card-body">
+                            <form>
+                                <div className="mb-3">
+                                    <label className="form-label"><i className="fas fa-pencil-alt me-2"></i>Task</label>
+                                    <input
+                                        className="form-control"
+                                        type="text"
+                                        placeholder="Enter Task"
+                                        onChange={(e) => setNewTask(e.target.value)}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label"><i className="fas fa-info-circle me-2"></i>Status</label>
+                                    <select
+                                        className="form-select"
+                                        onChange={(e) => setNewStatus(e.target.value)}
+                                        defaultValue=""
+                                    >
+                                        <option value="" disabled>Select Status</option>
+                                        {statusOptions.map(option => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.value}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label"><i className="far fa-calendar-alt me-2"></i>Deadline</label>
+                                    <input
+                                        className="form-control"
+                                        type="datetime-local"
+                                        onChange={(e) => setNewDeadline(e.target.value)}
+                                    />
+                                </div>
+                                <button onClick={addTask} className="btn btn-success w-100">
+                                    <i className="fas fa-plus-circle me-2"></i>Add Task
+                                </button>
+                            </form>
                         </div>
-                        <div className="mb-3">
-                            <label>Deadline</label>
-                            <input
-                                className="form-control"
-                                type="datetime-local"
-                                onChange={(e) => setNewDeadline(e.target.value)}
-                            />
-                        </div>
-                        <button onClick={addTask} className="btn btn-success btn-sm">
-                            Add Task
-                        </button>
-                    </form>
+                    </div>
                 </div>
-
             </div>
         </div>
     )
